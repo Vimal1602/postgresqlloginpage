@@ -19,20 +19,31 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
 
     try {
-      // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`http://localhost:5000/api/auth/${mode}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
 
       if (mode === 'register') {
-        // Add your registration logic here
         toast.success('Registration successful! Please log in.');
         navigate('/login');
       } else {
-        // Add your login logic here
         toast.success('Welcome back!');
+        // Store user data in localStorage if needed
+        localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/');
       }
-    } catch (error) {
-      toast.error('An error occurred. Please try again.');
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
